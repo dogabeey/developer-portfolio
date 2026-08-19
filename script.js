@@ -13,6 +13,7 @@ fetch("projects.php")
     return response.json();
   })
   .then((projects) => {
+    projectList.setAttribute("aria-busy", "false");
     if (!projects.length) {
       projectList.innerHTML = "<p>No projects have been published yet.</p>";
       return;
@@ -29,7 +30,7 @@ fetch("projects.php")
             <div class="project-card-content">
               <div class="project-role-row"><span>${escapeHtml(role)}</span>${window.isAdminLoggedIn && id ? `<a class="project-edit" href="admin/edit-project.php?id=${id}">Edit</a>` : ""}</div>
               <h3>${escapeHtml(title)}</h3>
-              <p>${escapeHtml(description)}</p>
+              <p class="project-description">${escapeHtml(description)}</p>
               ${screenshotMarkup ? `<div class="screenshot-strip">${screenshotMarkup}</div>` : ""}
             </div>
           </article>
@@ -51,6 +52,7 @@ fetch("projects.php")
     });
   })
   .catch(() => {
+    projectList.setAttribute("aria-busy", "false");
     projectList.innerHTML = "<p>Projects are unavailable right now. Please try again later.</p>";
   });
 

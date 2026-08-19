@@ -171,6 +171,35 @@ h2 {
   padding: 1.25rem;
 }
 
+.project-skeleton {
+  min-height: 0;
+  pointer-events: none;
+}
+
+.skeleton-image,
+.skeleton-line {
+  background: linear-gradient(100deg, #ebe6dd 35%, #f7f2e8 50%, #ebe6dd 65%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.25s infinite;
+}
+
+.skeleton-image {
+  aspect-ratio: 16 / 9;
+}
+
+.skeleton-line {
+  height: 0.85rem;
+  margin: 0.8rem 0 0;
+}
+
+.skeleton-line.short { width: 35%; height: 0.6rem; }
+.skeleton-line.title { width: 70%; height: 1.5rem; }
+.skeleton-line.medium { width: 55%; }
+
+@keyframes skeleton-shimmer {
+  to { background-position: -200% 0; }
+}
+
 .project-thumbnail {
   display: block;
   width: 100%;
@@ -186,6 +215,15 @@ h2 {
 
 .project-card p {
   color: var(--muted);
+}
+
+.project-card .project-description {
+  display: -webkit-box;
+  margin-bottom: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+  line-clamp: 7;
 }
 
 .project-card span {
@@ -273,5 +311,12 @@ h2 {
 
   .project-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-image,
+  .skeleton-line {
+    animation: none;
   }
 }

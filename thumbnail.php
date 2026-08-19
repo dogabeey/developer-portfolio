@@ -48,8 +48,12 @@ function resolve_thumbnail_url(string $imageUrl, string $pageUrl): ?string
 
 function fetch_project_page_html(string $pageUrl): ?string
 {
+    static $pageCache = [];
+    if (array_key_exists($pageUrl, $pageCache)) {
+        return $pageCache[$pageUrl];
+    }
     if (!is_http_url($pageUrl) || !has_public_host($pageUrl)) {
-        return null;
+        return $pageCache[$pageUrl] = null;
     }
 
     $html = false;
@@ -57,8 +61,8 @@ function fetch_project_page_html(string $pageUrl): ?string
         $curl = curl_init($pageUrl);
         curl_setopt_array($curl, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CONNECTTIMEOUT => 3,
-            CURLOPT_TIMEOUT => 6,
+            CURLOPT_CONNECTTIMEOUT_MS => 1500,
+            CURLOPT_TIMEOUT_MS => 4000,
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_USERAGENT => 'GameDevPortfolioThumbnailBot/1.0',
         ]);
@@ -89,10 +93,10 @@ function fetch_project_page_html(string $pageUrl): ?string
     }
 
     if (!is_string($html) || $html === '') {
-        return null;
+        return $pageCache[$pageUrl] = null;
     }
 
-    return $html;
+    return $pageCache[$pageUrl] = $html;
 }
 
 function fetch_project_thumbnail(string $pageUrl): ?string

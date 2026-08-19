@@ -27,45 +27,15 @@ try {
     }
     foreach ($projects as &$project) {
         $manualScreenshots = $screenshotsByProject[$project['id']]['manual'] ?? [];
+        $metadataScreenshots = $screenshotsByProject[$project['id']]['metadata'] ?? [];
         $project['screenshots'] = $manualScreenshots;
-        if ($project['use_metadata_description'] && $project['project_url']) {
-            $metadataTitle = storefront_title($project['project_url']);
-            $metadataDescription = storefront_description($project['project_url']);
-            $metadataThumbnailUrl = fetch_project_thumbnail($project['project_url']);
-            if ($metadataTitle) {
-                $project['title'] = $metadataTitle;
-                $update = database()->prepare('UPDATE projects SET metadata_title = ? WHERE id = ?');
-                $update->execute([$metadataTitle, $project['id']]);
-            }
-            if ($metadataDescription) {
-                $project['description'] = $metadataDescription;
-                $update = database()->prepare('UPDATE projects SET metadata_description = ? WHERE id = ?');
-                $update->execute([$metadataDescription, $project['id']]);
-            }
-            if ($metadataThumbnailUrl) {
-                $project['thumbnail_url'] = $metadataThumbnailUrl;
-                $update = database()->prepare('UPDATE projects SET metadata_thumbnail_url = ? WHERE id = ?');
-                $update->execute([$metadataThumbnailUrl, $project['id']]);
-            }
+        if ($project['use_metadata_description']) {
+            $project['title'] = $project['metadata_title'] ?: $project['title'];
+            $project['description'] = $project['metadata_description'] ?: $project['description'];
+            $project['thumbnail_url'] = $project['metadata_thumbnail_url'] ?: $project['thumbnail_url'];
         }
-        if ($project['use_metadata_screenshots'] && $project['project_url']) {
-            $metadataScreenshots = fetch_project_screenshots($project['project_url']);
-            if ($metadataScreenshots) {
-                $project['screenshots'] = $metadataScreenshots;
-                $database = database();
-                $database->beginTransaction();
-                try {
-                    $database->prepare("DELETE FROM project_screenshots WHERE project_id = ? AND source = 'metadata'")->execute([$project['id']]);
-                    $insert = $database->prepare("INSERT INTO project_screenshots (project_id, image_url, source, sort_order) VALUES (?, ?, 'metadata', ?)");
-                    foreach ($metadataScreenshots as $index => $imageUrl) {
-                        $insert->execute([$project['id'], $imageUrl, $index]);
-                    }
-                    $database->commit();
-                } catch (Throwable $error) {
-                    $database->rollBack();
-                    throw $error;
-                }
-            }
+        if ($project['use_metadata_screenshots'] && $metadataScreenshots) {
+            $project['screenshots'] = $metadataScreenshots;
         }
         unset($project['metadata_title'], $project['metadata_description'], $project['metadata_thumbnail_url'], $project['use_metadata_description'], $project['use_metadata_screenshots']);
         if (!isset($_SESSION['user_id'])) {

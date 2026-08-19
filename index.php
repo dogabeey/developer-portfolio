@@ -41,7 +41,11 @@ $isAdminLoggedIn = isset($_SESSION['user_id']);
           <p class="eyebrow">Selected Work</p>
           <div class="projects-heading-row"><h2 id="projects-title">Projects</h2><?php if ($isAdminLoggedIn): ?><a class="add-project-link" href="admin/create-project.php">Add New Project</a><?php endif; ?></div>
         </div>
-        <div id="project-list" class="project-grid" aria-live="polite"></div>
+        <div id="project-list" class="project-grid" aria-live="polite" aria-busy="true">
+          <article class="project-card project-skeleton" aria-hidden="true"><div class="skeleton-image"></div><div class="project-card-content"><div class="skeleton-line short"></div><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line medium"></div></div></article>
+          <article class="project-card project-skeleton" aria-hidden="true"><div class="skeleton-image"></div><div class="project-card-content"><div class="skeleton-line short"></div><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line medium"></div></div></article>
+          <article class="project-card project-skeleton" aria-hidden="true"><div class="skeleton-image"></div><div class="project-card-content"><div class="skeleton-line short"></div><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line medium"></div></div></article>
+        </div>
       </section>
 
       <section id="about" class="section" aria-labelledby="about-title">
