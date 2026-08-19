@@ -1,1 +1,19 @@
 config.php
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Local logs and temporary runtime files
+*.log
+php_errorlog
+error_log
