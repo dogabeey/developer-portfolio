@@ -1,0 +1,277 @@
+:root {
+  color-scheme: light;
+  --ink: #1f2933;
+  --muted: #627d98;
+  --canvas: #f7f2e8;
+  --surface: #ffffff;
+  --accent: #c64b35;
+  --accent-dark: #923422;
+  --line: #d7d0c5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+}
+
+.site-header,
+.site-footer,
+main {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand,
+.button {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.site-header nav a,
+.text-link {
+  text-underline-offset: 0.22em;
+}
+
+.intro {
+  max-width: 760px;
+  padding: 7rem 0 6rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--accent-dark);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.08;
+}
+
+h1 {
+  font-size: 7.5rem;
+}
+
+h2 {
+  font-size: 3.5rem;
+}
+
+.intro-copy {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 1.25rem;
+}
+
+.button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  color: #ffffff;
+  background: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.section {
+  padding: 4.5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.section-heading {
+  margin-bottom: 2rem;
+}
+
+.projects-heading-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.add-project-link {
+  margin-bottom: 0.25rem;
+  color: var(--accent-dark);
+  font-family: Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.project-card {
+  min-height: 230px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.project-card-link {
+  display: block;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.project-card-link:hover,
+.project-card-link:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgb(31 41 51 / 14%);
+}
+
+.project-card-content {
+  padding: 1.25rem;
+}
+
+.project-thumbnail {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--line);
+}
+
+.project-card h3 {
+  margin: 0.45rem 0;
+  font-size: 1.5rem;
+}
+
+.project-card p {
+  color: var(--muted);
+}
+
+.project-card span {
+  color: var(--accent-dark);
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 820px) {
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.project-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.project-edit {
+  position: relative;
+  z-index: 1;
+  color: var(--accent-dark);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.screenshot-strip {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.screenshot-strip img {
+  display: block;
+  width: auto;
+  height: 10rem;
+  max-width: 100%;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.site-footer {
+  padding: 1.5rem 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+
+  .intro {
+    padding: 5rem 0 4rem;
+  }
+
+  h1 {
+    font-size: 3.5rem;
+  }
+
+  h2 {
+    font-size: 2.25rem;
+  }
+
+  .projects-heading-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+}
