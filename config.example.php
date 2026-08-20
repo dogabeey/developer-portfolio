@@ -4,6 +4,8 @@ const DB_HOST = '127.0.0.1';
 const DB_NAME = 'game_dev_portfolio';
 const DB_USER = 'root';
 const DB_PASS = '';
+// Generate a long random value for each environment; used to hash click IPs.
+const CLICK_HASH_SALT = 'replace-with-a-long-random-secret';
 
 function database(): PDO
 {

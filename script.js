@@ -20,16 +20,16 @@ fetch("projects.php")
     }
 
     projectList.innerHTML = projects
-      .map(({ id, title, role, description, project_url, thumbnail_url, screenshots }) => {
+      .map(({ id, title, role, description, project_url, thumbnail_url, screenshots, click_count }) => {
         const isLinked = /^https?:\/\//i.test(project_url || "");
         const linkAttributes = isLinked ? ` data-project-url="${escapeHtml(project_url)}" tabindex="0" role="link" aria-label="Open ${escapeHtml(title)} project"` : "";
         const screenshotMarkup = (screenshots || []).map((url, index) => `<img src="${escapeHtml(url)}" alt="${escapeHtml(title)} screenshot ${index + 1}" loading="lazy">`).join("");
         return `
-          <article class="project-card${isLinked ? " project-card-link" : ""}"${linkAttributes}>
+          <article class="project-card${isLinked ? " project-card-link" : ""}"${linkAttributes}${isLinked && id ? ` data-project-id="${id}"` : ""}>
             ${thumbnail_url ? `<img class="project-thumbnail" src="${escapeHtml(thumbnail_url)}" alt="${escapeHtml(title)} thumbnail" loading="lazy">` : ""}
             <div class="project-card-content">
               <div class="project-role-row"><span>${escapeHtml(role)}</span>${window.isAdminLoggedIn && id ? `<a class="project-edit" href="admin/edit-project.php?id=${id}">Edit</a>` : ""}</div>
-              <h3>${escapeHtml(title)}</h3>
+              <h3>${escapeHtml(title)}${window.isAdminLoggedIn && id ? ` <span class="project-click-count">${Number(click_count) || 0}</span>` : ""}</h3>
               <p class="project-description">${escapeHtml(description)}</p>
               ${screenshotMarkup ? `<div class="screenshot-strip">${screenshotMarkup}</div>` : ""}
             </div>
@@ -39,7 +39,18 @@ fetch("projects.php")
       .join("");
 
     document.querySelectorAll(".project-card-link").forEach((card) => {
-      const openProject = () => window.open(card.dataset.projectUrl, "_blank", "noopener");
+      const openProject = () => {
+        if (card.dataset.projectId) {
+          const data = new FormData();
+          data.append("project_id", card.dataset.projectId);
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon("record-project-click.php", data);
+          } else {
+            fetch("record-project-click.php", { method: "POST", body: data, keepalive: true }).catch(() => {});
+          }
+        }
+        window.open(card.dataset.projectUrl, "_blank", "noopener");
+      };
       card.addEventListener("click", (event) => {
         if (!event.target.closest("a, button, input, textarea, select")) openProject();
       });

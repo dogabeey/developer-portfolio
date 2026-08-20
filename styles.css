@@ -217,8 +217,21 @@ h2 {
   color: var(--muted);
 }
 
+.project-click-count {
+  display: inline-block;
+  margin-left: 0.4rem;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .project-card .project-description {
   display: -webkit-box;
+  height: 11.2em;
   margin-bottom: 0;
   overflow: hidden;
   -webkit-box-orient: vertical;

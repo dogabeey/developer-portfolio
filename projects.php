@@ -8,8 +8,9 @@ try {
     require __DIR__ . '/config.php';
     require_once __DIR__ . '/thumbnail.php';
     $statement = database()->query(
-        'SELECT id, title, role, description, metadata_title, metadata_description, metadata_thumbnail_url, use_metadata_description, use_metadata_screenshots, project_url, thumbnail_url
-         FROM projects
+        'SELECT p.id, p.title, p.role, p.description, p.metadata_title, p.metadata_description, p.metadata_thumbnail_url, p.use_metadata_description, p.use_metadata_screenshots, p.project_url, p.thumbnail_url,
+                (SELECT COUNT(*) FROM project_clicks c WHERE c.project_id = p.id) AS click_count
+         FROM projects p
          WHERE is_published = 1
          ORDER BY sort_order ASC, created_at DESC'
     );
@@ -40,6 +41,7 @@ try {
         unset($project['metadata_title'], $project['metadata_description'], $project['metadata_thumbnail_url'], $project['use_metadata_description'], $project['use_metadata_screenshots']);
         if (!isset($_SESSION['user_id'])) {
             unset($project['id']);
+            unset($project['click_count']);
         }
     }
     unset($project);

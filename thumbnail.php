@@ -46,6 +46,22 @@ function resolve_thumbnail_url(string $imageUrl, string $pageUrl): ?string
     return is_http_url($imageUrl) ? $imageUrl : null;
 }
 
+function app_store_lookup(string $pageUrl): ?array
+{
+    static $lookupCache = [];
+    if (array_key_exists($pageUrl, $lookupCache)) {
+        return $lookupCache[$pageUrl];
+    }
+    $host = strtolower((string) parse_url($pageUrl, PHP_URL_HOST));
+    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com'], true) || !preg_match('/\/id(\d+)/', $pageUrl, $idMatch)) {
+        return $lookupCache[$pageUrl] = null;
+    }
+    $country = preg_match('#apps\.apple\.com/([a-z]{2})/#i', $pageUrl, $countryMatch) ? strtolower($countryMatch[1]) : 'us';
+    $lookup = fetch_project_page_html('https://itunes.apple.com/lookup?id=' . $idMatch[1] . '&country=' . $country);
+    $data = $lookup ? json_decode($lookup, true) : null;
+    return $lookupCache[$pageUrl] = ($data['results'][0] ?? null);
+}
+
 function fetch_project_page_html(string $pageUrl): ?string
 {
     static $pageCache = [];
@@ -138,14 +154,8 @@ function storefront_description(string $pageUrl): ?string
 
     // Apple's public lookup endpoint returns the actual developer-written app
     // description, unlike the generic social metadata on product pages.
-    if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true) && preg_match('/\/id(\d+)/', $pageUrl, $idMatch)) {
-        $country = 'us';
-        if (preg_match('#apps\.apple\.com/([a-z]{2})/#i', $pageUrl, $countryMatch)) {
-            $country = strtolower($countryMatch[1]);
-        }
-        $lookup = fetch_project_page_html('https://itunes.apple.com/lookup?id=' . $idMatch[1] . '&country=' . $country);
-        $data = $lookup ? json_decode($lookup, true) : null;
-        $description = trim((string) ($data['results'][0]['description'] ?? ''));
+    if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true)) {
+        $description = trim((string) (app_store_lookup($pageUrl)['description'] ?? ''));
         if ($description !== '') {
             return $description;
         }
@@ -180,11 +190,8 @@ function storefront_title(string $pageUrl): ?string
     if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true)) {
         return null;
     }
-    if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true) && preg_match('/\/id(\d+)/', $pageUrl, $idMatch)) {
-        $country = preg_match('#apps\.apple\.com/([a-z]{2})/#i', $pageUrl, $countryMatch) ? strtolower($countryMatch[1]) : 'us';
-        $lookup = fetch_project_page_html('https://itunes.apple.com/lookup?id=' . $idMatch[1] . '&country=' . $country);
-        $data = $lookup ? json_decode($lookup, true) : null;
-        $title = trim((string) ($data['results'][0]['trackName'] ?? ''));
+    if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true)) {
+        $title = trim((string) (app_store_lookup($pageUrl)['trackName'] ?? ''));
         if ($title !== '') {
             return $title;
         }
@@ -215,6 +222,19 @@ function fetch_project_screenshots(string $pageUrl): array
 
     $images = [];
     if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true)) {
+        // Prefer Apple’s structured iPhone-only list. iPad screenshots are a
+        // separate field and intentionally ignored.
+        foreach ((app_store_lookup($pageUrl)['screenshotUrls'] ?? []) as $url) {
+            if (is_string($url) && is_http_url($url)) {
+                $images[$url] = $url;
+            }
+        }
+        if ($images) {
+            return array_slice(array_values($images), 0, 6);
+        }
+
+        // Some legacy listings omit screenshotUrls from lookup; fall back to
+        // the iPhone shelf on their product page.
         // Restrict extraction to App Store's iPhone shelf, excluding iPad previews.
         $iphoneShelfStart = strpos($html, 'id="product_media_phone_');
         if ($iphoneShelfStart === false) {
@@ -235,13 +255,18 @@ function fetch_project_screenshots(string $pageUrl): array
             }
         }
     } else {
-        // Google Play explicitly marks gallery images with this accessible label.
+        // Google Play can use src, data-src, or srcset depending on the page version.
         preg_match_all('/<img\b[^>]*>/i', $html, $tags);
         foreach ($tags[0] as $tag) {
-            if (stripos($tag, 'Screenshot image') === false) {
+            if (stripos($tag, 'Screenshot image') === false && stripos($tag, 'data-screenshot') === false) {
                 continue;
             }
-            $url = image_attribute($tag, 'src');
+            $url = image_attribute($tag, 'src') ?: image_attribute($tag, 'data-src') ?: image_attribute($tag, 'data-original');
+            if (!$url) {
+                $srcset = image_attribute($tag, 'srcset') ?: image_attribute($tag, 'data-srcset');
+                $url = trim(explode(',', $srcset)[0] ?? '');
+                $url = preg_split('/\s+/', $url)[0] ?? '';
+            }
             if (is_http_url($url)) {
                 $images[$url] = $url;
             }
