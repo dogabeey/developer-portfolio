@@ -62,6 +62,32 @@ function app_store_lookup(string $pageUrl): ?array
     return $lookupCache[$pageUrl] = ($data['results'][0] ?? null);
 }
 
+function is_sensor_tower_url(string $url): bool
+{
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    return $host === 'sensortower.com' || str_ends_with($host, '.sensortower.com');
+}
+
+function sensor_tower_store_link(string $pageUrl): ?string
+{
+    static $storeLinkCache = [];
+    if (array_key_exists($pageUrl, $storeLinkCache)) {
+        return $storeLinkCache[$pageUrl];
+    }
+    if (!is_sensor_tower_url($pageUrl)) {
+        return $storeLinkCache[$pageUrl] = null;
+    }
+    $html = fetch_project_page_html($pageUrl);
+    if ($html === null) {
+        return $storeLinkCache[$pageUrl] = null;
+    }
+    if (preg_match('#https?://apps\.apple\.com/[^"\'\s<>]+/id\d+[^"\'\s<>]*#i', $html, $match)
+        || preg_match('#https?://play\.google\.com/store/apps/details\?id=[^"\'\s<>&]+#i', $html, $match)) {
+        return $storeLinkCache[$pageUrl] = html_entity_decode($match[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+    return $storeLinkCache[$pageUrl] = null;
+}
+
 function decode_chunked_body(string $body): string
 {
     $decoded = '';
@@ -173,8 +199,11 @@ function image_attribute(string $tag, string $attribute): string
 function storefront_description(string $pageUrl): ?string
 {
     $host = strtolower((string) parse_url($pageUrl, PHP_URL_HOST));
-    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true)) {
+    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true) && !is_sensor_tower_url($pageUrl)) {
         return null;
+    }
+    if (is_sensor_tower_url($pageUrl) && ($storeLink = sensor_tower_store_link($pageUrl))) {
+        return storefront_description($storeLink);
     }
 
     // Apple's public lookup endpoint returns the actual developer-written app
@@ -212,8 +241,11 @@ function storefront_description(string $pageUrl): ?string
 function storefront_title(string $pageUrl): ?string
 {
     $host = strtolower((string) parse_url($pageUrl, PHP_URL_HOST));
-    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true)) {
+    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true) && !is_sensor_tower_url($pageUrl)) {
         return null;
+    }
+    if (is_sensor_tower_url($pageUrl) && ($storeLink = sensor_tower_store_link($pageUrl))) {
+        return storefront_title($storeLink);
     }
     if (in_array($host, ['apps.apple.com', 'itunes.apple.com'], true)) {
         $title = trim((string) (app_store_lookup($pageUrl)['trackName'] ?? ''));
@@ -237,8 +269,12 @@ function storefront_title(string $pageUrl): ?string
 function fetch_project_screenshots(string $pageUrl): array
 {
     $host = strtolower((string) parse_url($pageUrl, PHP_URL_HOST));
-    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true)) {
+    if (!in_array($host, ['apps.apple.com', 'itunes.apple.com', 'play.google.com'], true) && !is_sensor_tower_url($pageUrl)) {
         return [];
+    }
+    if (is_sensor_tower_url($pageUrl)) {
+        $storeLink = sensor_tower_store_link($pageUrl);
+        return $storeLink ? fetch_project_screenshots($storeLink) : [];
     }
     $html = fetch_project_page_html($pageUrl);
     if ($html === null) {
