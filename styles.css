@@ -125,6 +125,25 @@ h2 {
   margin-bottom: 2rem;
 }
 
+.section-edit-link {
+  color: var(--accent-dark);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.header-edit {
+  margin-left: auto;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .projects-heading-row {
   display: flex;
   align-items: end;

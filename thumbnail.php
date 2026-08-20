@@ -62,6 +62,30 @@ function app_store_lookup(string $pageUrl): ?array
     return $lookupCache[$pageUrl] = ($data['results'][0] ?? null);
 }
 
+function decode_chunked_body(string $body): string
+{
+    $decoded = '';
+    $offset = 0;
+    while ($offset < strlen($body)) {
+        $lineEnd = strpos($body, "\r\n", $offset);
+        if ($lineEnd === false) {
+            return $body;
+        }
+        $length = hexdec(trim(explode(';', substr($body, $offset, $lineEnd - $offset), 2)[0]));
+        $offset = $lineEnd + 2;
+        if ($length === 0) {
+            break;
+        }
+        $chunk = substr($body, $offset, $length);
+        if (strlen($chunk) !== $length) {
+            return $body;
+        }
+        $decoded .= $chunk;
+        $offset += $length + 2;
+    }
+    return $decoded;
+}
+
 function fetch_project_page_html(string $pageUrl): ?string
 {
     static $pageCache = [];
@@ -102,9 +126,10 @@ function fetch_project_page_html(string $pageUrl): ?string
         if ($socket) {
             stream_set_timeout($socket, 6);
             fwrite($socket, "GET {$path} HTTP/1.1\r\nHost: {$host}\r\nUser-Agent: GameDevPortfolioThumbnailBot/1.0\r\nAccept: text/html\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n");
-            $response = stream_get_contents($socket, 1_000_000);
+            $response = stream_get_contents($socket, 2_000_000);
             fclose($socket);
-            $html = explode("\r\n\r\n", $response, 2)[1] ?? false;
+            [$headers, $body] = array_pad(explode("\r\n\r\n", $response, 2), 2, '');
+            $html = stripos($headers, 'Transfer-Encoding: chunked') !== false ? decode_chunked_body($body) : $body;
         }
     }
 

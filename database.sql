@@ -51,3 +51,9 @@ CREATE TABLE project_clicks (
   CONSTRAINT clicks_project_fk
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE landing_content (
+  section_key VARCHAR(40) PRIMARY KEY,
+  content_json JSON NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
