@@ -5,11 +5,11 @@ function landing_content_defaults(): array
 {
     return [
         'site' => [
-            'brand' => 'Game Dev Portfolio',
+            'brand' => 'Doğa Can KILIÇ',
             'nav_projects' => 'Projects',
             'nav_about' => 'About',
             'nav_contact' => 'Contact',
-            'footer_name' => 'Game Dev Portfolio',
+            'footer_name' => 'Doğa Can KILIÇ',
         ],
         'hero' => [
             'eyebrow' => 'Developer Portfolio',
@@ -30,6 +30,12 @@ function landing_content_defaults(): array
             'eyebrow' => 'Contact',
             'title' => 'Let’s make something memorable.',
             'email' => 'hello@example.com',
+            'phone' => '',
+            'linkedin_url' => '',
+            'github_url' => '',
+            'x_url' => '',
+            'discord' => '',
+            'custom' => [],
         ],
     ];
 }
